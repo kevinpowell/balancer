@@ -1,27 +1,27 @@
 # A hacked together single/dual plane balancer (for cheap)
 
 ## System components:
-  -*Rasberry pi 4
-  -Prototyping had for rpi 4
-  -MCP3008 adc
-  -IR LED/photoresistor proximity detector
-  -2 displacement to volatage transducers (initial system used small speakers)
+  - *Rasberry pi 4
+  - Prototyping had for rpi 4
+  - MCP3008 adc
+  - IR LED/photoresistor proximity detector
+  - 2 displacement to volatage transducers (initial system used small speakers)
 
 
 ## Assembly:
-  -Install RPi OS and upgrade to latest packages
-  -Test system used custom 5.6.19 kernel with RT patchset
-  -Connect MCP3008 to spi0 on rpi
-  -Connect transducer 1 to first differential channel on mcp
-  -Connect transducer 2 to second differential channel on mcp
-  -Connect IR sensor output to ch7 on mcp
+  - Install RPi OS and upgrade to latest packages
+  - Test system used custom 5.6.19 kernel with RT patchset
+  - Connect MCP3008 to spi0 on rpi
+  - Connect transducer 1 to first differential channel on mcp
+  - Connect transducer 2 to second differential channel on mcp
+  - Connect IR sensor output to ch7 on mcp
 
 ## Configure System:
-  -Enable spi: add "dtparam=spi=on" to config.txt
-  -Enable mcp iio driver: add "dtoverlay=mcp3008:spi0-0-present,spi0-0-speed=18000000" to config.txt
-  -Build pcmcnt_mod kernel module and arrange for it to be loaded at boot
-  -Build the collect_3008 executable (via make) and arrange for it to be in your path
-  -Install the python module (written for Python3 only!) in whatever way seems best (e.g. python setup.py develop --user)
+  - Enable spi: add "dtparam=spi=on" to config.txt
+  - Enable mcp iio driver: add "dtoverlay=mcp3008:spi0-0-present,spi0-0-speed=18000000" to config.txt
+  - Build pcmcnt_mod kernel module and arrange for it to be loaded at boot
+  - Build the collect_3008 executable (via make) and arrange for it to be in your path
+  - Install the python module (written for Python3 only!) in whatever way seems best (e.g. python setup.py develop --user)
 
 ## Software Overview:
   There are three parts to the software system: small kernel module, C code to capture samples, Python code for data processing
@@ -37,19 +37,19 @@
   data collection process.
 
 ## System Use:
-  -for single plane balance: csbal_s <stem> <freq> <shift_ang> <test_mass>
-    -where
-      -stem is a file stem e.g data/fan1/  (if it is a directory, it must exist or the script will crash)
-      -freq is the frequency of interest (rpm setting of DUT/60)
-      -shift_ang is the distance in degrees from the reference line where the test mass is mounted
-      -test_mass is the mass of the test mass used. correction weights will have the same units as this input
+  - for single plane balance: csbal_s <stem> <freq> <shift_ang> <test_mass>
+    - where
+      - stem is a file stem e.g data/fan1/  (if it is a directory, it must exist or the script will crash)
+      - freq is the frequency of interest (rpm setting of DUT/60)
+      - shift_ang is the distance in degrees from the reference line where the test mass is mounted
+      - test_mass is the mass of the test mass used. correction weights will have the same units as this input
 
-  -for the initial dual plane balance: csbal_dinit <stem> <freq> <shift_ang> <test_mass> 
-      -note that the script assumes that the A and B trials will use the same mass and shift_ang
+  - for the initial dual plane balance: csbal_dinit <stem> <freq> <shift_ang> <test_mass> 
+      - note that the script assumes that the A and B trials will use the same mass and shift_ang
 
-  -for subsequent dual plane balance: csbal_d <stem> <tag>
-      -where 
-        -tag is a 'file tag' the data for this iteration will be stored at stem / t<tag>-ch[x].csv
+  - for subsequent dual plane balance: csbal_d <stem> <tag>
+      - where 
+        - tag is a 'file tag' the data for this iteration will be stored at stem / t<tag>-ch[x].csv
 
 ## Acknowledgements:
   Too many to list.  This project is largely cobbled together from sources on the internet.  I am particularly
