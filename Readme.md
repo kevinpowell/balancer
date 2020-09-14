@@ -2,7 +2,7 @@
 
 ## System components:
   - *Rasberry pi 4
-  - Prototyping had for rpi 4
+  - Prototyping hat for rpi 4
   - MCP3008 adc
   - IR LED/photoresistor proximity detector
   - 2 displacement to volatage transducers (initial system used small speakers)
@@ -64,7 +64,7 @@
 
   I'll consider pull requests in my own time, thanks.
 
-  The idea for using speakers as transducers came from Hoffman.  Later, I discovered that sparkfun (and others) have very affordabable piezo sensors. They're probably better.
+  The idea for using speakers as transducers came from Hoffman.  Later, I discovered that sparkfun (and others) have very affordable piezo sensors. They're probably better.
 
   I conected the speakers to the adc in the most naive possible way.  It would be better to have proper biasing via op-amps.
 
