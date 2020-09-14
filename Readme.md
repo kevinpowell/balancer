@@ -10,7 +10,7 @@
 
 ## Assembly:
   - Install RPi OS and upgrade to latest packages
-   - Test system used custom 5.6.19 kernel with RT patchset
+    - Test system used custom 5.6.19 kernel with RT patchset
   - Connect MCP3008 to spi0 on rpi
   - Connect transducer 1 to first differential channel on mcp
   - Connect transducer 2 to second differential channel on mcp
