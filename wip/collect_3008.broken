@@ -1,0 +1,100 @@
+/* mcp3008 data acquision using libiio */
+
+#include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+#include <signal.h>
+#include <stdio.h>
+#include <iio.h>
+
+int64_t get_counter();  //declared in main_timer
+
+#define POLL_FREQ 20000
+#define CAP_SECS 4
+#define ERR_BUF_SZ 256
+
+static struct iio_context *ctx   = NULL;
+static struct iio_channel *ch1 = NULL;
+static struct iio_channel *ch2 = NULL;
+static struct iio_channel *rpm = NULL;
+static struct iio_device  *adc = NULL;
+static char *ch1_attr, *ch2_attr, *rpm_attr;
+static char errstr[ERR_BUF_SZ];
+
+typedef struct {
+    int64_t ts;
+    short  val;
+} samp_t;
+
+typedef struct {
+    samp_t ch1;
+    samp_t ch2;
+    samp_t rpm;
+} frame_t;
+
+static frame_t data[POLL_FREQ * CAP_SECS];
+static volatile int count=0;
+
+#define IIO_ENSURE(expr) { \
+	if (!(expr)) { \
+		(void) fprintf(stderr, "assertion failed (%s:%d)\n", __FILE__, __LINE__); \
+		(void) abort(); \
+	} \
+}
+
+void init_3008(void)
+{
+    IIO_ENSURE((ctx = iio_create_default_context()) && "No context"); //create context
+    IIO_ENSURE(iio_context_get_devices_count(ctx) > 0 && "No devices"); //make sure there's a device
+    IIO_ENSURE((adc = iio_context_find_device(ctx, "mcp3008")) && "No ADC"); //find the mpc3008 adc
+    IIO_ENSURE((ch1 = iio_device_find_channel(adc, "voltage1-voltage0",0)) && "ch1 error");
+    IIO_ENSURE((ch2 = iio_device_find_channel(adc, "voltage3-voltage2",0)) && "ch2 error");
+    IIO_ENSURE((rpm = iio_device_find_channel(adc, "voltage7",0)) && "rpm ch error");
+    ch1_attr = iio_channel_get_attr(ch1, 0);
+    ch2_attr = iio_channel_get_attr(ch2, 0);
+    rpm_attr = iio_channel_get_attr(rpm, 0);
+
+}
+
+void deinit_3008(void)
+{
+
+}
+
+void poll_3008(void)
+{
+    long long tmp;
+    int64_t ts = 0;
+    int rt;
+    if(count >= POLL_FREQ * CAP_SECS) return;
+
+    rt = iio_channel_attr_read_longlong(ch1, ch1_attr, &tmp);
+    if(rt<0) iio_strerror(rt, errstr, ERR_BUF_SZ);
+    //ts = get_counter();
+    data[count].ch1.val = (short)tmp;
+    data[count].ch1.ts = ts;
+
+    rt = iio_channel_attr_read_longlong(ch2, ch2_attr, &tmp);
+    if(rt<0) iio_strerror(rt, errstr, ERR_BUF_SZ);
+    //ts = get_counter();
+    data[count].ch2.val = (short)tmp;
+    data[count].ch2.ts = ts;
+
+    rt = iio_channel_attr_read_longlong(rpm, rpm_attr, &tmp);
+    if(rt<0) iio_strerror(rt, errstr, ERR_BUF_SZ);
+    //ts = get_counter();
+    data[count].rpm.val = (short)tmp;
+    data[count].rpm.ts = ts;
+
+    count++;
+}
+
+void dump_data_3008(char *filename)
+{
+
+}
+
+int cap_done_3008()
+{
+    return count >= POLL_FREQ * CAP_SECS;
+}
