@@ -81,7 +81,7 @@ def single_balance(results, tmass, shift_ang, offset_1_ang, offset_2_ang):
     y_res = ((results[2]['ch1']['amplitude']**2)-(results[3]['ch1']['amplitude']**2))/((4*results[0]['ch1']['amplitude']**2)*(np.sin(np.radians(shift_ang))))
     mass_ratio = 1.0/(np.linalg.norm([x_res, y_res]))
     add_mass = tmass * mass_ratio;
-    remove_ang = np.degrees(np.atan2(x_res, y_res))
+    remove_ang = np.degrees(np.arctan2(y_res, x_res)) #note that numpy atan2 uses the (y,x) convention
     add_ang = 180 if remove_ang == 0 else -1*np.sign(remove_ang)*(180-np.abs(remove_ang))
     offset_mass1 = add_mass*((np.sin(np.radians(offset_2_ang)))/(np.sin(np.radians(offset_1_ang+offset_2_ang))))
     offset_mass2 = add_mass*((np.sin(np.radians(offset_1_ang)))/(np.sin(np.radians(offset_1_ang+offset_2_ang))))

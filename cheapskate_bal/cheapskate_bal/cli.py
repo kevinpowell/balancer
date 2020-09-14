@@ -27,7 +27,7 @@ def csbal_process():
     bal.graph_data(df)
     bal.process_data(df,freq,samp_rate)
 
-def grab_data(tests):
+def grab_data(tests,stem):
     for t in tests:
         msg, tag = t
         print(msg)
@@ -35,12 +35,12 @@ def grab_data(tests):
         input("Press Enter to start data capture...")
         subprocess.run(["taskset", "-c", "3", "nice", "-20", __collector__['exe'],stem+t])
 
-def batch_process(tests):
+def batch_process(tests,stem,freq):
     results = []
     for t in tests:
         tag = t[1]
         sr = __collector__['samp_rate']
-        df = bal.read_data(stem+t,freq,sr)
+        df = bal.read_data_files(stem+tag,freq,sr)
         results.append(bal.process_data(df,freq,sr))
     return results
 
@@ -74,10 +74,10 @@ def csbal_single():
              ('T2: test mass at positive angle', 't2'),
              ('T3: test mass at negative angle', 't3'), ]
 
-    grab_data(tests)
+    grab_data(tests,stem)
     print("Processing captured data...")
 
-    results = batch_process(tests)
+    results = batch_process(tests,stem,freq)
 
     print("Balace Results:")
     bal.single_balance(results,tmass, shift_ang, )
@@ -104,10 +104,10 @@ def csbal_dual_init():
            ('TA: test mass on bearing 1 at shift angle', 'ta'),
            ('TB: test mass on bearing 2 at shift angle', 'tb')]
 
-    grab_data(tests)
+    grab_data(tests,stem)
 
     print("Processing captured data...")
-    results = batch_process(tests)
+    results = batch_process(tests,stem,freq)
 
     print("Dual Plane Balance Results")
     influence, correction = bal.dual_compute_influence(results, tmass, shift_ang)
@@ -121,14 +121,15 @@ def csbal_dual_iter():
     """
     This method performs an iteration of dual plane balance, once the influence params are known
     One file is captured and the results are emitted
-    args are file stem
+    args are file stem, tag, freq
     """
 
     args = sys.argv[1:]
-    if args.size < 2:
+    if args.size < 3:
         print("args are: filestem, iter")
     stem = args[0]
     tag = args[1]
+    freq = args[2]
 
     #make sure the stem looks like a directory
     if stem[-1] != os.path.sep:
@@ -142,10 +143,10 @@ def csbal_dual_iter():
 
     tests=[('T(curr): initial unbalanced state', 't'+tag) ]
 
-    grab_data(tests)
+    grab_data(tests,stem)
 
     print("Processing captured data...")
-    results = batch_process(tests)
+    results = batch_process(tests,stem,freq)
 
     print("Dual Plane Balance Results")
     correction = bal.dual_compute_weights(results, influence)
