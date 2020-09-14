@@ -52,7 +52,7 @@ def csbal_single():
 
     args = sys.argv[1:]
     if args.size < 4:
-        print("args are stem, freq, shift_ang")
+        print("args are stem, freq, shift_ang, test_mass")
     stem = args[0]
     freq = float(args[1])
     shift_ang = float(args[2])
@@ -90,7 +90,7 @@ def csbal_dual_init():
 
     args = sys.argv[1:]
     if args.size < 4:
-        print("args are stem, freq, shift_ang")
+        print("args are stem, freq, shift_ang, test_mass")
     stem = args[0]
     freq = float(args[1])
     shift_ang = float(args[2])
@@ -126,7 +126,7 @@ def csbal_dual_iter():
 
     args = sys.argv[1:]
     if args.size < 3:
-        print("args are: filestem, iter")
+        print("args are: filestem, tag, freq")
     stem = args[0]
     tag = args[1]
     freq = args[2]

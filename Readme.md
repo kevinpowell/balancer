@@ -48,7 +48,7 @@
   - for the initial dual plane balance: csbal_dinit \<stem> \<freq> \<shift_ang> \<test_mass> 
       - note that the script assumes that the A and B trials will use the same mass and shift_ang
 
-  - for subsequent dual plane balance: csbal_d \<stem> \<tag>
+  - for subsequent dual plane balance: csbal_d \<stem> \<tag> \<freq>
       - where 
         - tag is a 'file tag' the data for this iteration will be stored at stem / t\<tag>-ch[x].csv
 
