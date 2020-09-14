@@ -75,3 +75,11 @@
   it also explains all the hamfisted signal handling action in main_timer.  I would have been better off spending time updating the mcp3008 kernel driver to use iio triggering
   and buffering.  Speaking of which, in the wip directory there is a data collector that is based on libiio.  I never got it working, but the guts are sort of there.
 
+  I got surprisingly close to the 20ksamps/sec that I set out to get (actually 60k, since there are 3 chans) Unfortunately in the read_adc function there are two syscalls (read,lseek)
+    per channel.
+  That pretty much torpedoes the top speed.  I think that splice or copy_file_range might make the difference.  One could splice the data from the adc filehandle to a pipe, and then 
+  drain the pipe in the main time where it calls pause().
+
+  Note that the collect_3008 must be constrained to run on just one core.  the cycle count register used for timestamping is per-core.
+
+  I tried running collect_3008 as a realtime process, but it caused a lot of trouble.  It also *reduced* the throughput.  It did reduce the timing jitter a lot, though.
