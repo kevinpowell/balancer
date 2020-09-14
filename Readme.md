@@ -1,54 +1,57 @@
-A hacked together single/dual plane balancer (for cheap)
+#A hacked together single/dual plane balancer (for cheap)
 
-System components:
-  *Rasberry pi 4
-  Prototyping had for rpi 4
-  MCP3008 adc
-  IR LED/photoresistor proximity detector
-  2 displacement to volatage transducers (initial system used small speakers)
+##System components:
+  -*Rasberry pi 4
+  -Prototyping had for rpi 4
+  -MCP3008 adc
+  -IR LED/photoresistor proximity detector
+  -2 displacement to volatage transducers (initial system used small speakers)
 
 
-Assembly:
-  Install RPi OS and upgrade to latest packages
-  Test system used custom 5.6.19 kernel with RT patchset
-  Connect MCP3008 to spi0 on rpi
-  Connect transducer 1 to first differential channel on mcp
-  Connect transducer 2 to second differential channel on mcp
-  Connect IR sensor output to ch7 on mcp
+##Assembly:
+  -Install RPi OS and upgrade to latest packages
+  -Test system used custom 5.6.19 kernel with RT patchset
+  -Connect MCP3008 to spi0 on rpi
+  -Connect transducer 1 to first differential channel on mcp
+  -Connect transducer 2 to second differential channel on mcp
+  -Connect IR sensor output to ch7 on mcp
 
-Configure System:
-  Enable spi: add "dtparam=spi=on" to config.txt
-  Enable mcp iio driver: add "dtoverlay=mcp3008:spi0-0-present,spi0-0-speed=18000000" to config.txt
-  Build pcmcnt_mod kernel module and arrange for it to be loaded at boot
-  Build the collect_3008 executable (via make) and arrange for it to be in your path
-  Install the python module (written for Python3 only!) in whatever way seems best (e.g. python setup.py develop --user)
+##Configure System:
+  -Enable spi: add "dtparam=spi=on" to config.txt
+  -Enable mcp iio driver: add "dtoverlay=mcp3008:spi0-0-present,spi0-0-speed=18000000" to config.txt
+  -Build pcmcnt_mod kernel module and arrange for it to be loaded at boot
+  -Build the collect_3008 executable (via make) and arrange for it to be in your path
+  -Install the python module (written for Python3 only!) in whatever way seems best (e.g. python setup.py develop --user)
 
-Software Overview:
+##Software Overview:
   There are three parts to the software system: small kernel module, C code to capture samples, Python code for data processing
+
   The small kernel module merely enables userspace access to the cycle counter (which is used by the daq code)
+
   The C code gathers samples from the adc (3 channels), timestamps them, and saves them in a file.  C code is futher decomposed
   into a main loop handling timing (main_timer.c) and device specific code for the mcp3008 (collect_3008.c).  collect_3008.c
   uses the iio sysfs interface to the mcp3008 kernel driver to get adc samples from the chip.
+
   The Python module (cheapskate_bal) uses a combination of pandas, scipy, and numpy to process the collected data and generate
   suggested correction weights.  The python module also defines a few high level entry points that attempt to orchestrate the
   data collection process.
 
-System Use:
-  for single plane balance: csbal_s <stem> <freq> <shift_ang> <test_mass>
-    where
-      stem is a file stem e.g data/fan1/  (if it is a directory, it must exist or the script will crash)
-      freq is the frequency of interest (rpm setting of DUT/60)
-      shift_ang is the distance in degrees from the reference line where the test mass is mounted
-      test_mass is the mass of the test mass used. correction weights will have the same units as this input
+##System Use:
+  -for single plane balance: csbal_s <stem> <freq> <shift_ang> <test_mass>
+    -where
+      -stem is a file stem e.g data/fan1/  (if it is a directory, it must exist or the script will crash)
+      -freq is the frequency of interest (rpm setting of DUT/60)
+      -shift_ang is the distance in degrees from the reference line where the test mass is mounted
+      -test_mass is the mass of the test mass used. correction weights will have the same units as this input
 
-  for the initial dual plane balance: csbal_dinit <stem> <freq> <shift_ang> <test_mass> 
-      note that the script assumes that the A and B trials will use the same mass and shift_ang
+  -for the initial dual plane balance: csbal_dinit <stem> <freq> <shift_ang> <test_mass> 
+      -note that the script assumes that the A and B trials will use the same mass and shift_ang
 
-  for subsequent dual plane balance: csbal_d <stem> <tag>
-      where 
-        tag is a 'file tag' the data for this iteration will be stored at stem / t<tag>-ch[x].csv
+  -for subsequent dual plane balance: csbal_d <stem> <tag>
+      -where 
+        -tag is a 'file tag' the data for this iteration will be stored at stem / t<tag>-ch[x].csv
 
-Acknowledgements:
+##Acknowledgements:
   Too many to list.  This project is largely cobbled together from sources on the internet.  I am particularly
   indebted to Conrad Hoffman (for the math behind the single plane mode).  See his website at http://www.conradhoffman.com/chsw.htm.
   The math for the dual plane balancer came from https://www.maintenance.org/fileSendAction/fcType/0/fcOid/399590942964042178/filePointer/399590942964815332/fodoid/399590942964815330/TwoPlaneBalanceTrialATrialB_Maple.PDF 
@@ -56,12 +59,17 @@ Acknowledgements:
   To the rest (and there are many) I'm sorry I forgot where your snippets came from.
 
 
-General Notes/Future Plans:
+##General Notes/Future Plans:
   This software has the defecta trifecta: it is poorly written, it is poorly documented, and it is poorly supported.  Good luck to you if you try it.
+
   I'll consider pull requests in my own time, thanks.
+
   The idea for using speakers as transducers came from Hoffman.  Later, I discovered that sparkfun (and others) have very affordabable piezo sensors. They're probably better.
+
   I conected the speakers to the adc in the most naive possible way.  It would be better to have proper biasing via op-amps.
+
   The MCP3008 is plenty fast for this operation, but a more modern adc with a gain stage would probably be preferable
+
   In the early stages of this project, I made several errors.  One of which led me to believe that I would need to support 20ksamps/sec. That's why I used the RT kernel and
   it also explains all the hamfisted signal handling action in main_timer.  I would have been better off spending time updating the mcp3008 kernel driver to use iio triggering
   and buffering.  Speaking of which, in the wip directory there is a data collector that is based on libiio.  I never got it working, but the guts are sort of there.
