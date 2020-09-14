@@ -37,19 +37,20 @@
   data collection process.
 
 ## System Use:
-  - for single plane balance: csbal_s <stem> <freq> <shift_ang> <test_mass>
+  - attach transducers to DUT at supporting bearing(s).  rig the IR prox sensor to trip once per revolution of the DUT.
+  - for single plane balance: csbal_s \<stem> \<freq> \<shift_ang> \<test_mass>
     - where
       - stem is a file stem e.g data/fan1/  (if it is a directory, it must exist or the script will crash)
       - freq is the frequency of interest (rpm setting of DUT/60)
       - shift_ang is the distance in degrees from the reference line where the test mass is mounted
       - test_mass is the mass of the test mass used. correction weights will have the same units as this input
 
-  - for the initial dual plane balance: csbal_dinit <stem> <freq> <shift_ang> <test_mass> 
+  - for the initial dual plane balance: csbal_dinit \<stem> \<freq> \<shift_ang> \<test_mass> 
       - note that the script assumes that the A and B trials will use the same mass and shift_ang
 
-  - for subsequent dual plane balance: csbal_d <stem> <tag>
+  - for subsequent dual plane balance: csbal_d \<stem> \<tag>
       - where 
-        - tag is a 'file tag' the data for this iteration will be stored at stem / t<tag>-ch[x].csv
+        - tag is a 'file tag' the data for this iteration will be stored at stem / t\<tag>-ch[x].csv
 
 ## Acknowledgements:
   Too many to list.  This project is largely cobbled together from sources on the internet.  I am particularly
