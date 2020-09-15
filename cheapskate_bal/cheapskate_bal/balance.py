@@ -55,34 +55,38 @@ def read_data_files(stem, freq, samp_rate):
      out.append(dummy_frame.combine_first(f).interpolate('time').resample(samp_str).asfreq().fillna(method='ffill').fillna(method='bfill'))
 
   df=pd.concat(out, axis=1).fillna(method='ffill')
-  for col in 'ch1','ch2':
-      df[col] = lfilter(b,a,df[col]) #TODO: probably want a bandpass filter here rather than just lowpass
+  #for col in 'ch1','ch2':
+  #    df[col] = lfilter(b,a,df[col]) #TODO: probably want a bandpass filter here rather than just lowpass
   return df
 
 def graph_data(df):
-  df.plot()
+  df.plot(title='Input Data (Resampled and Interpolated)')
   plt.show()
 
 def process_data(df,freq,samp_rate,graph_fft=False):
-    out = {}
-    for d in [df.ch1, df.ch2, df.rpm]:
+    out = {'ch1':None, 'ch2':None, 'rpm':None}
+    maxfidx = None
+    for d in [df.rpm, df.ch1, df.ch2]:
         #compute fft
         fft= np.fft.rfft(d-np.mean(d)) #de-mean so we don't get a big dc value
         #show graph
         frqs = np.fft.rfftfreq(d.size, d=1.0/samp_rate)
         if graph_fft:
             plt.plot(frqs, fft.real**2 + fft.imag**2)
+            plt.title("FFT: " + d.name)
             plt.show()
-        #find a peak near the desired frequency
-        startfreq = freq-freq*.1
-        endfreq = freq+freq*.1
-        search_frqs = np.where((frqs>=startfreq)&(frqs<=endfreq))[0] # where() gives a tuple, first el is ary of indexes
-        maxfidx = np.argmax(np.abs(fft[search_frqs[0]:search_frqs[-1]])) + search_frqs[0]
+        #in the first data set (rpm), find a peak near the desired frequency
+        if maxfidx is None:
+            startfreq = freq-freq*.1
+            endfreq = freq+freq*.1
+            search_frqs = np.where((frqs>=startfreq)&(frqs<=endfreq))[0] # where() gives a tuple, first el is ary of indexes
+            maxfidx = np.argmax(np.abs(fft[search_frqs[0]:search_frqs[-1]])) + search_frqs[0]
         maxf = frqs[maxfidx]
         print("Selected frequency at {0} Hz ({1} RPM) [max freq at {2}]".format(maxf, maxf*60,frqs[np.argmax(np.abs(fft))]))
-        #extract real and imaginary part  #TODO: should constrain this to be at or near the frequency of interest
+        #extract real and imaginary part
         outval = fft[maxfidx]
         out[d.name] = {'maxfft':outval, 'amplitude':np.abs(outval)}
+
     print(out)
     return out
 
