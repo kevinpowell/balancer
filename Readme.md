@@ -81,7 +81,7 @@
   I got surprisingly close to the 20ksamps/sec that I set out to get (actually 60k, since there are 3 chans) Unfortunately in the read_adc function there are two syscalls (read,lseek)
     per channel.
   That pretty much torpedoes the top speed.  I think that splice or copy_file_range might make the difference.  One could splice the data from the adc filehandle to a pipe, and then 
-  drain the pipe in the main time where it calls pause().
+  drain the pipe in main_time.c where it calls pause().
 
   Note that the collect_3008 must be constrained to run on just one core.  the cycle count register used for timestamping is per-core.
 
