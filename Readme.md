@@ -20,6 +20,7 @@
   - Enable spi: add "dtparam=spi=on" to config.txt
   - Enable mcp iio driver: add "dtoverlay=mcp3008:spi0-0-present,spi0-0-speed=18000000" to config.txt
   - Build pcmcnt_mod kernel module and arrange for it to be loaded at boot
+  - Set the rpi frequency governor to performance and pin the cpu freq to 1.5GHz
   - Build the collect_3008 executable (via make) and arrange for it to be in your path
   - Install the python module (written for Python3 only!) in whatever way seems best (e.g. python setup.py develop --user)
 
@@ -57,6 +58,7 @@
   indebted to Conrad Hoffman (for the math behind the single plane mode).  See his website at http://www.conradhoffman.com/chsw.htm.
   The math for the dual plane balancer came from https://www.maintenance.org/fileSendAction/fcType/0/fcOid/399590942964042178/filePointer/399590942964815332/fodoid/399590942964815330/TwoPlaneBalanceTrialATrialB_Maple.PDF 
   The outline for the data acquision part came from https://jumpnowtek.com/rpi/Using-mcp3008-ADCs-with-Raspberry-Pis.html
+  main_timer.c was hoisted from https://stackoverflow.com/questions/24051863/how-to-implement-highly-accurate-timers-in-linux-userspace and subseqently beaten with the ugly stick.
   To the rest (and there are many) I'm sorry I forgot where your snippets came from.
 
 
@@ -69,7 +71,8 @@
 
   I conected the speakers to the adc in the most naive possible way.  It would be better to have proper biasing via op-amps.
 
-  The MCP3008 is plenty fast for this operation, but a more modern adc with a gain stage would probably be preferable
+  The MCP3008 is plenty fast for this operation, but a more modern adc with a gain stage would probably be preferable.  A real voltage reference would not go amiss, either.
+  The cheapo IR proximity detectors that I used for sensing the positon of the rotor don't have the response time they should (could be my underdeveloped circuit building, though)
 
   In the early stages of this project, I made several errors.  One of which led me to believe that I would need to support 20ksamps/sec. That's why I used the RT kernel and
   it also explains all the hamfisted signal handling action in main_timer.  I would have been better off spending time updating the mcp3008 kernel driver to use iio triggering

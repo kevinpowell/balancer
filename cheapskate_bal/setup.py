@@ -12,7 +12,7 @@ setup(
     # package info
     name='cheapskate_bal',
     description='Cheapskate labs single/dual plane balancer',
-    version='0.0.0',
+    version='0.0.2',
     url='http://your/url/here',
     author='Kevin Powell',
     author_email='kevin@kevinpowell.guru',
@@ -22,7 +22,7 @@ setup(
     # scripts to install to usr/bin
     entry_points={
         'console_scripts': [
-            'csbal=cheapskate_bal.cli:csbal_main',
+            'csbal=cheapskate_bal.cli:csbal_process',
             'csbal_s=cheapskate_bal.cli:csbal_single',
             'csbal_dinit=cheapskate_bal.cli:csbal_dual_init',
             'csbal_d=cheapskate_bal.cli:csbal_dual_iter'

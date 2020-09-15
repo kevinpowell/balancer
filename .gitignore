@@ -7,3 +7,5 @@
 *.ko
 *.mod.c
 *.order
+build
+data

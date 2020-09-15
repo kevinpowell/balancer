@@ -9,6 +9,7 @@ import pdb
 import matplotlib.pyplot as plt
 from scipy.signal import butter, lfilter
 
+
 def read_data_files(stem, freq, samp_rate):
   fnamech1 = stem + '-ch1.csv'
   fnamech2 = stem + '-ch2.csv'
@@ -33,7 +34,11 @@ def read_data_files(stem, freq, samp_rate):
   #rpm is active-low -- find the first high to low transition and take that as the 0 deg point
 
   trig = rpmframe['rpm'].diff();
+  #if this next line causes an error, it is likely that the rotation trigger is not working
   start_time = rpmframe.ts.iloc[rpmframe[trig.gt(50)].index[0]] #this is crap -- it looks like matlab (ts of first row where trig > 50)
+
+  # make the rpm column into single triggers of the sensor (this should eliminate false frequency readings)
+  rpmframe['rpm'] = rpmframe['rpm'].diff().gt(50).astype(int)*100
 
   #remove data before the 0 deg point and 
   #resample the frames, starting at start_time
@@ -50,7 +55,7 @@ def read_data_files(stem, freq, samp_rate):
      out.append(dummy_frame.combine_first(f).interpolate('time').resample(samp_str).asfreq().fillna(method='ffill').fillna(method='bfill'))
 
   df=pd.concat(out, axis=1).fillna(method='ffill')
-  for col in df:
+  for col in 'ch1','ch2':
       df[col] = lfilter(b,a,df[col]) #TODO: probably want a bandpass filter here rather than just lowpass
   return df
 
@@ -58,18 +63,23 @@ def graph_data(df):
   df.plot()
   plt.show()
 
-def process_data(df,freq,samp_rate):
+def process_data(df,freq,samp_rate,graph_fft=False):
     out = {}
     for d in [df.ch1, df.ch2, df.rpm]:
         #compute fft
         fft= np.fft.rfft(d-np.mean(d)) #de-mean so we don't get a big dc value
         #show graph
         frqs = np.fft.rfftfreq(d.size, d=1.0/samp_rate)
-        #plt.plot(frqs, fft.real**2 + fft.imag**2)
-        #plt.show()
-        maxfidx = np.argmax(np.abs(fft))
+        if graph_fft:
+            plt.plot(frqs, fft.real**2 + fft.imag**2)
+            plt.show()
+        #find a peak near the desired frequency
+        startfreq = freq-freq*.1
+        endfreq = freq+freq*.1
+        search_frqs = np.where((frqs>=startfreq)&(frqs<=endfreq))[0] # where() gives a tuple, first el is ary of indexes
+        maxfidx = np.argmax(np.abs(fft[search_frqs[0]:search_frqs[-1]])) + search_frqs[0]
         maxf = frqs[maxfidx]
-        print("Max frequency at {0} Hz ({1} RPM)".format(maxf, maxf*60))
+        print("Selected frequency at {0} Hz ({1} RPM) [max freq at {2}]".format(maxf, maxf*60,frqs[np.argmax(np.abs(fft))]))
         #extract real and imaginary part  #TODO: should constrain this to be at or near the frequency of interest
         outval = fft[maxfidx]
         out[d.name] = {'maxfft':outval, 'amplitude':np.abs(outval)}
@@ -164,8 +174,8 @@ def dual_compute_influence(results, tmass, shift_ang):
     V2A = results[1]['ch2']['maxfft']
 
     TU2B = TU1A
-    V1B = results[3]['ch1']['maxfft']
-    V2B = results[3]['ch2']['maxfft']
+    V1B = results[2]['ch1']['maxfft']
+    V2B = results[2]['ch2']['maxfft']
 
     #compute influence
     K11 = (V1A-V10)/TU1A
